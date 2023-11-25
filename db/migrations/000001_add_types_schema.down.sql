@@ -1,0 +1,3 @@
+DROP TYPE IF EXISTS rank;
+
+DROP TYPE IF EXISTS status;
