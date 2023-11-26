@@ -12,7 +12,7 @@ import (
 )
 
 func createRandomAccountForTransferTx(t *testing.T, ctx context.Context, balance int64, status sqlc.Status) sqlc.Account {
-	account, err := testQueries.CreateAccount(ctx, sqlc.CreateAccountParams{Type: "savings", Balance: balance, AccStatus: status})
+	account, err := store.CreateAccount(ctx, sqlc.CreateAccountParams{Type: "savings", Balance: balance, AccStatus: status})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -20,23 +20,20 @@ func createRandomAccountForTransferTx(t *testing.T, ctx context.Context, balance
 }
 
 func getUpdatedAccountByTransferTx(t *testing.T, ctx context.Context, accountID int64) sqlc.Account {
-	updatedAccount, err := testQueries.GetAccount(ctx, accountID)
+	updatedAccount, err := store.GetAccount(ctx, accountID)
 	require.NoError(t, err)
 
 	return updatedAccount
 }
 
 func deleteUserCreatedByTransferTx(t *testing.T, ctx context.Context, accountID int64) {
-	err := testQueries.DeleteAccount(ctx, accountID)
+	err := store.DeleteAccount(ctx, accountID)
 	require.NoError(t, err)
 }
 
 func TestTransferTx(t *testing.T) {
 	// Create a new context
 	ctx := context.Background()
-
-	// Create a new store using the testDB
-	store := db.NewStore(testDB)
 
 	// Create two new accounts
 	account1 := createRandomAccountForTransferTx(t, ctx, 10000, "active")

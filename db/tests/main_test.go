@@ -6,12 +6,11 @@ import (
 	"testing"
 
 	"github.com/buddhimaaushan/mini_bank/db"
-	sqlc "github.com/buddhimaaushan/mini_bank/db/sqlc"
 	"github.com/buddhimaaushan/mini_bank/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var testQueries *sqlc.Queries
+var store db.Store
 var testDB *pgxpool.Pool
 var config utils.Config
 
@@ -34,6 +33,6 @@ func TestMain(m *testing.M) {
 	}
 	log.Println("database connection established")
 
-	testQueries = sqlc.New(testDB)
+	store = db.NewStore(testDB)
 	os.Exit(m.Run())
 }

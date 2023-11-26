@@ -27,7 +27,7 @@ func createRandomUser(t *testing.T) sqlc.User {
 	}
 
 	// Create user
-	user, err := testQueries.CreateUser(context.Background(), arg)
+	user, err := store.CreateUser(context.Background(), arg)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
@@ -84,7 +84,7 @@ func compareUserEquality(t *testing.T, user1, user2 sqlc.User) {
 
 func deleteUser(t *testing.T, user sqlc.User) {
 	// Delete user
-	delUser, err := testQueries.DeleteUser(context.Background(), user.ID)
+	delUser, err := store.DeleteUser(context.Background(), user.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, delUser)
 
@@ -103,7 +103,7 @@ func TestGetUserByID(t *testing.T) {
 	randUser := createRandomUser(t)
 
 	// Get the "randUser" created in db from db
-	dbUser, err := testQueries.GetUserByID(context.Background(), randUser.ID)
+	dbUser, err := store.GetUserByID(context.Background(), randUser.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, dbUser)
 
