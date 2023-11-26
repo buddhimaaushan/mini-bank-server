@@ -15,14 +15,20 @@ var config utils.Config
 
 func init() {
 	var err error
+
+	// Load environment variables
 	config, err = utils.LoadConfig(".")
 	if err != nil {
 		log.Fatal("cannot load config: ", err)
 	}
+	log.Println("environment variables loaded")
+
+	// Connect to database
 	conn, err = db.ConnectToDb(config.DatabaseURL)
 	if err != nil {
 		log.Fatal("cannot connect to db: ", err)
 	}
+	log.Println("database connection established")
 }
 
 func main() {
