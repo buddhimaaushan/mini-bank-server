@@ -11,6 +11,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    environment: production
     services:
       postgres:
         image: postgres:12
