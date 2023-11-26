@@ -12,6 +12,9 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     environment: production
+    env:
+      DATABASE_URL: ${{vars.DATABASE_URL }}
+      SERVER_ADDRESS: ${{vars.SERVER_ADDRESS }}
     services:
       postgres:
         image: postgres:12
