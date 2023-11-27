@@ -21,6 +21,7 @@ func ConnectToDb(dbUri string) (conn *pgxpool.Pool, err error) {
 type Store interface {
 	sqlc.Querier
 	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+	AccountTx(ctx context.Context, arg AccountTxParams) (AccountTxResult, error)
 }
 
 // SQLSrore provides all functions to execute SQL queries and transactions
@@ -213,4 +214,71 @@ func addMoney(ctx context.Context, q *sqlc.Queries, accountID1 int64, amount1 in
 	}
 
 	return
+}
+
+type AccountTxParams struct {
+	Type      string      ` json:"type"`
+	Balance   int64       ` json:"balance"`
+	AccStatus sqlc.Status ` json:"acc_status"`
+	UserIDs   []int64     ` json:"user_id"`
+}
+
+type AccountTxResult struct {
+	Account        sqlc.Account         `json:"account"`
+	AccountHolders []sqlc.AccountHolder `json:"account_holders"`
+}
+
+// AccountTx creates a new account with account holders
+func (store *SQLStore) AccountTx(ctx context.Context, arg AccountTxParams) (AccountTxResult, error) {
+	var result AccountTxResult
+
+	// Execute the transaction using the execTx method of the store.
+	err := store.execTx(ctx, func(q *sqlc.Queries) error {
+		var err error
+
+		// Create an account
+		result.Account, err = q.CreateAccount(ctx, sqlc.CreateAccountParams{
+			Type:      arg.Type,
+			Balance:   arg.Balance,
+			AccStatus: arg.AccStatus,
+		})
+		if err != nil {
+			return err
+		}
+
+		//Generate account holders from user IDs
+		accountHolders := generateAccountHolders(result.Account.ID, arg.UserIDs)
+
+		// Create account holders
+		limit, err := q.CreateAccountHolders(ctx, accountHolders)
+		if err != nil {
+			return err
+		}
+
+		// Get the account holders
+		result.AccountHolders, err = q.GetAccountHoldersByAccountID(ctx, sqlc.GetAccountHoldersByAccountIDParams{
+			AccID:  result.Account.ID,
+			Limit:  int32(limit),
+			Offset: 0,
+		})
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+	return result, err
+}
+
+// Generate account holders
+func generateAccountHolders(accountID int64, userIDs []int64) []sqlc.CreateAccountHoldersParams {
+	var accountHolders []sqlc.CreateAccountHoldersParams
+	for _, userID := range userIDs {
+		accountHolders = append(accountHolders, sqlc.CreateAccountHoldersParams{
+			AccID:  accountID,
+			UserID: userID,
+		})
+	}
+	return accountHolders
+
 }

@@ -37,6 +37,21 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// AccountTx mocks base method.
+func (m *MockStore) AccountTx(arg0 context.Context, arg1 db.AccountTxParams) (db.AccountTxResult, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AccountTx", arg0, arg1)
+	ret0, _ := ret[0].(db.AccountTxResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AccountTx indicates an expected call of AccountTx.
+func (mr *MockStoreMockRecorder) AccountTx(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AccountTx", reflect.TypeOf((*MockStore)(nil).AccountTx), arg0, arg1)
+}
+
 // CreateAccount mocks base method.
 func (m *MockStore) CreateAccount(arg0 context.Context, arg1 sqlc.CreateAccountParams) (sqlc.Account, error) {
 	m.ctrl.T.Helper()

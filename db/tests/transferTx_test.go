@@ -6,38 +6,17 @@ import (
 	"testing"
 
 	"github.com/buddhimaaushan/mini_bank/db"
-	"github.com/buddhimaaushan/mini_bank/db/sqlc"
 	app_error "github.com/buddhimaaushan/mini_bank/errors"
 	"github.com/stretchr/testify/require"
 )
-
-func createRandomAccountForTransferTx(t *testing.T, ctx context.Context, balance int64, status sqlc.Status) sqlc.Account {
-	account, err := store.CreateAccount(ctx, sqlc.CreateAccountParams{Type: "savings", Balance: balance, AccStatus: status})
-	if err != nil {
-		t.Fatal(err)
-	}
-	return account
-}
-
-func getUpdatedAccountByTransferTx(t *testing.T, ctx context.Context, accountID int64) sqlc.Account {
-	updatedAccount, err := store.GetAccount(ctx, accountID)
-	require.NoError(t, err)
-
-	return updatedAccount
-}
-
-func deleteUserCreatedByTransferTx(t *testing.T, ctx context.Context, accountID int64) {
-	err := store.DeleteAccount(ctx, accountID)
-	require.NoError(t, err)
-}
 
 func TestTransferTx(t *testing.T) {
 	// Create a new context
 	ctx := context.Background()
 
 	// Create two new accounts
-	account1 := createRandomAccountForTransferTx(t, ctx, 10000, "active")
-	account2 := createRandomAccountForTransferTx(t, ctx, 10000, "active")
+	account1 := createRandomAccount(t, ctx, 10000, "active")
+	account2 := createRandomAccount(t, ctx, 10000, "active")
 
 	// Print the balances of the accounts before the transfer
 	fmt.Println(">> Before:", account1.Balance, account2.Balance)
@@ -151,8 +130,8 @@ func TestTransferTx(t *testing.T) {
 	}
 
 	// Retrieve the updated account information for accounts
-	updatedAccount1 := getUpdatedAccountByTransferTx(t, ctx, account1.ID)
-	updatedAccount2 := getUpdatedAccountByTransferTx(t, ctx, account2.ID)
+	updatedAccount1 := getUpdatedAccount(t, ctx, account1.ID)
+	updatedAccount2 := getUpdatedAccount(t, ctx, account2.ID)
 
 	// Print the balances of the updated accounts
 	fmt.Println(">> After:", updatedAccount1.Balance, updatedAccount2.Balance)
@@ -162,10 +141,10 @@ func TestTransferTx(t *testing.T) {
 	require.Equal(t, updatedAccount2.Balance, account2.Balance+amount*int64(n))
 
 	// Delete the account1 from the store
-	deleteUserCreatedByTransferTx(t, ctx, account1.ID)
+	deleteAccount(t, ctx, account1.ID)
 
 	// Delete the account2 from the store
-	deleteUserCreatedByTransferTx(t, ctx, account2.ID)
+	deleteAccount(t, ctx, account2.ID)
 }
 
 func TestTransferTxBetwenTwoAccountsDeadlock(t *testing.T) {
@@ -176,8 +155,8 @@ func TestTransferTxBetwenTwoAccountsDeadlock(t *testing.T) {
 	store := db.NewStore(testDB)
 
 	// Create two new accounts
-	account1 := createRandomAccountForTransferTx(t, ctx, 10000, "active")
-	account2 := createRandomAccountForTransferTx(t, ctx, 10000, "active")
+	account1 := createRandomAccount(t, ctx, 10000, "active")
+	account2 := createRandomAccount(t, ctx, 10000, "active")
 
 	// Print the balances of the accounts before the transfer
 	fmt.Println(">> Before:", account1.Balance, account2.Balance)
@@ -237,8 +216,8 @@ func TestTransferTxBetwenTwoAccountsDeadlock(t *testing.T) {
 	}
 
 	// Retrieve the updated account information for accounts
-	updatedAccount1 := getUpdatedAccountByTransferTx(t, ctx, account1.ID)
-	updatedAccount2 := getUpdatedAccountByTransferTx(t, ctx, account2.ID)
+	updatedAccount1 := getUpdatedAccount(t, ctx, account1.ID)
+	updatedAccount2 := getUpdatedAccount(t, ctx, account2.ID)
 
 	// Print the balances of the updated accounts
 	fmt.Println(">> After:", updatedAccount1.Balance, updatedAccount2.Balance)
@@ -248,10 +227,10 @@ func TestTransferTxBetwenTwoAccountsDeadlock(t *testing.T) {
 	require.Equal(t, updatedAccount2.Balance, account2.Balance)
 
 	// Delete the account1 from the store
-	deleteUserCreatedByTransferTx(t, ctx, account1.ID)
+	deleteAccount(t, ctx, account1.ID)
 
 	// Delete the account2 from the store
-	deleteUserCreatedByTransferTx(t, ctx, account2.ID)
+	deleteAccount(t, ctx, account2.ID)
 }
 func TestTransferTxAmountLTEQZero(t *testing.T) {
 	// Create a new context
@@ -261,8 +240,8 @@ func TestTransferTxAmountLTEQZero(t *testing.T) {
 	store := db.NewStore(testDB)
 
 	// Create two new accounts
-	account1 := createRandomAccountForTransferTx(t, ctx, 10000, "active")
-	account2 := createRandomAccountForTransferTx(t, ctx, 10000, "active")
+	account1 := createRandomAccount(t, ctx, 10000, "active")
+	account2 := createRandomAccount(t, ctx, 10000, "active")
 
 	// Print the balances of the accounts before the transfer
 	fmt.Println(">> Before:", account1.Balance, account2.Balance)
@@ -323,8 +302,8 @@ func TestTransferTxAmountLTEQZero(t *testing.T) {
 	}
 
 	// Retrieve the updated account information for accounts
-	updatedAccount1 := getUpdatedAccountByTransferTx(t, ctx, account1.ID)
-	updatedAccount2 := getUpdatedAccountByTransferTx(t, ctx, account2.ID)
+	updatedAccount1 := getUpdatedAccount(t, ctx, account1.ID)
+	updatedAccount2 := getUpdatedAccount(t, ctx, account2.ID)
 
 	// Print the balances of the updated accounts
 	fmt.Println(">> After:", updatedAccount1.Balance, updatedAccount2.Balance)
@@ -334,8 +313,8 @@ func TestTransferTxAmountLTEQZero(t *testing.T) {
 	require.Equal(t, updatedAccount2.Balance, account2.Balance)
 
 	// Delete the account1 from the store
-	deleteUserCreatedByTransferTx(t, ctx, account1.ID)
+	deleteAccount(t, ctx, account1.ID)
 
 	// Delete the account2 from the store
-	deleteUserCreatedByTransferTx(t, ctx, account2.ID)
+	deleteAccount(t, ctx, account2.ID)
 }
