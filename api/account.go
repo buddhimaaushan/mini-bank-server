@@ -3,13 +3,15 @@ package api
 import (
 	"net/http"
 
+	"github.com/buddhimaaushan/mini_bank/db"
 	"github.com/buddhimaaushan/mini_bank/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 )
 
 type createAccountRequest struct {
-	Type string `json:"type" binding:"required"`
+	Type    string  `json:"type" binding:"required"`
+	UserIDs []int64 `json:"user_ids" binding:"required,gt=0"`
 }
 
 // CreateAccount creates a new account
@@ -18,26 +20,27 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	// Create a new account
-	arg := sqlc.CreateAccountParams{
+	// Arguments for a new account
+	arg := db.AccountTxParams{
 		Type:      req.Type,
-		AccStatus: "inactive",
 		Balance:   0,
+		AccStatus: sqlc.StatusInactive,
+		UserIDs:   req.UserIDs,
 	}
 
-	// Create the account
-	account, err := server.Store.CreateAccount(ctx, arg)
+	// Create account and account holders
+	result, err := server.Store.AccountTx(ctx, arg)
 	if err != nil {
-		ctx.JSON(400, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
 	// Return the account
-	ctx.JSON(http.StatusOK, account)
+	ctx.JSON(http.StatusOK, result)
 }
 
 type getAccountRequest struct {
