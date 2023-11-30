@@ -9,31 +9,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Compare two users
-func compareUserEquality(t *testing.T, user1, user2 sqlc.User) {
-	require.Equal(t, user1.ID, user2.ID)
-	require.Equal(t, user1.FirstName, user2.FirstName)
-	require.Equal(t, user1.LastName, user2.LastName)
-	require.Equal(t, user1.Username, user2.Username)
-	require.Equal(t, user1.Nic, user2.Nic)
-	require.Equal(t, user1.HashedPassword, user2.HashedPassword)
-	require.Equal(t, user1.PasswordChangedAt, user2.PasswordChangedAt)
-	require.Equal(t, user1.Email, user2.Email)
-	require.Equal(t, user1.IsEmailVerified, user2.IsEmailVerified)
-	require.Equal(t, user1.Phone, user2.Phone)
-	require.Equal(t, user1.IsPhoneVerified, user2.IsPhoneVerified)
-	require.Equal(t, user1.AccStatus, user2.AccStatus)
-	require.Equal(t, user1.CustomerRank, user2.CustomerRank)
-	require.Equal(t, user1.IsAnEmployee, user2.IsAnEmployee)
-	require.Equal(t, user1.IsACustomer, user2.IsACustomer)
-	require.Equal(t, user1.Role, user2.Role)
-	require.Equal(t, user1.Department, user2.Department)
-
-	require.WithinDuration(t, user1.EmailChangedAt.Time, user2.EmailChangedAt.Time, time.Second)
-	require.WithinDuration(t, user1.PhoneChangedAt.Time, user2.PhoneChangedAt.Time, time.Second)
-	require.WithinDuration(t, user1.CreatedAt.Time, user2.CreatedAt.Time, time.Second)
-}
-
 func TestRandomUser(t *testing.T) {
 	// Create a random user
 	arg, user := createRandomUser(t)
@@ -80,4 +55,29 @@ func TestGetUserByID(t *testing.T) {
 
 	// Delete user
 	deleteUser(t, randUser)
+}
+
+// Compare two users
+func compareUserEquality(t *testing.T, user1, user2 sqlc.User) {
+	require.Equal(t, user1.ID, user2.ID)
+	require.Equal(t, user1.FirstName, user2.FirstName)
+	require.Equal(t, user1.LastName, user2.LastName)
+	require.Equal(t, user1.Username, user2.Username)
+	require.Equal(t, user1.Nic, user2.Nic)
+	require.Equal(t, user1.HashedPassword, user2.HashedPassword)
+	require.Equal(t, user1.PasswordChangedAt, user2.PasswordChangedAt)
+	require.Equal(t, user1.Email, user2.Email)
+	require.Equal(t, user1.IsEmailVerified, user2.IsEmailVerified)
+	require.Equal(t, user1.Phone, user2.Phone)
+	require.Equal(t, user1.IsPhoneVerified, user2.IsPhoneVerified)
+	require.Equal(t, user1.AccStatus, user2.AccStatus)
+	require.Equal(t, user1.CustomerRank, user2.CustomerRank)
+	require.Equal(t, user1.IsAnEmployee, user2.IsAnEmployee)
+	require.Equal(t, user1.IsACustomer, user2.IsACustomer)
+	require.Equal(t, user1.Role, user2.Role)
+	require.Equal(t, user1.Department, user2.Department)
+
+	require.WithinDuration(t, user1.EmailChangedAt.Time, user2.EmailChangedAt.Time, time.Second)
+	require.WithinDuration(t, user1.PhoneChangedAt.Time, user2.PhoneChangedAt.Time, time.Second)
+	require.WithinDuration(t, user1.CreatedAt.Time, user2.CreatedAt.Time, time.Second)
 }
