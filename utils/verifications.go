@@ -12,12 +12,12 @@ var MinAccountBalance int64 = 100
 
 // verifyTxBalance verifies the balance of an account.
 func IsAccountBalanceSufficient(account sqlc.Account) bool {
-	return account.Balance < MinAccountBalance
+	return account.Balance >= MinAccountBalance
 }
 
 // IsAccountActive verifies the status of an account.
 func IsAccountActive(account sqlc.Account) bool {
-	return account.AccStatus != "active"
+	return account.AccStatus == "active"
 }
 
 // EmailRegex is a regex for email
