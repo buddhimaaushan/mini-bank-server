@@ -1,11 +1,13 @@
 package utils
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"strings"
 
 	"github.com/buddhimaaushan/mini_bank/constants"
+	"github.com/buddhimaaushan/mini_bank/db/sqlc"
 )
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -36,4 +38,16 @@ func RandomBalance() string {
 func RandomCurrency() constants.Currency {
 	currencyList := constants.CurrencyList
 	return currencyList[rand.Intn(len(currencyList))]
+}
+
+func CreateRandomUser() sqlc.User {
+	return sqlc.User{
+		FirstName:      RandomString(6),
+		LastName:       RandomString(6),
+		Username:       RandomString(6),
+		Nic:            strconv.Itoa(RandomInt(1000000000, 9999999999)),
+		HashedPassword: "secret",
+		Email:          fmt.Sprintf("%s@%s.com", RandomString(6), RandomString(6)),
+		Phone:          strconv.Itoa(RandomInt(1000000000, 9999999999)),
+	}
 }

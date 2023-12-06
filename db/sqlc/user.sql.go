@@ -74,7 +74,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 
 const DeleteUser = `-- name: DeleteUser :one
 
-DELETE FROM users WHERE id = $1::BIGINT RETURNING id, first_name, last_name, username, nic, hashed_password, password_changed_at, email, is_email_verified, email_changed_at, phone, is_phone_verified, phone_changed_at, acc_status, customer_rank, is_an_employee, is_a_customer, role, department, created_at
+DELETE FROM users WHERE id = $1:: BIGINT RETURNING id, first_name, last_name, username, nic, hashed_password, password_changed_at, email, is_email_verified, email_changed_at, phone, is_phone_verified, phone_changed_at, acc_status, customer_rank, is_an_employee, is_a_customer, role, department, created_at
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, dollar_1 int64) (User, error) {
@@ -330,6 +330,39 @@ SELECT id, first_name, last_name, username, nic, hashed_password, password_chang
 
 func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 	row := q.db.QueryRow(ctx, GetUserByID, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.FirstName,
+		&i.LastName,
+		&i.Username,
+		&i.Nic,
+		&i.HashedPassword,
+		&i.PasswordChangedAt,
+		&i.Email,
+		&i.IsEmailVerified,
+		&i.EmailChangedAt,
+		&i.Phone,
+		&i.IsPhoneVerified,
+		&i.PhoneChangedAt,
+		&i.AccStatus,
+		&i.CustomerRank,
+		&i.IsAnEmployee,
+		&i.IsACustomer,
+		&i.Role,
+		&i.Department,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const GetUserByUsername = `-- name: GetUserByUsername :one
+
+SELECT id, first_name, last_name, username, nic, hashed_password, password_changed_at, email, is_email_verified, email_changed_at, phone, is_phone_verified, phone_changed_at, acc_status, customer_rank, is_an_employee, is_a_customer, role, department, created_at FROM users WHERE username = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRow(ctx, GetUserByUsername, username)
 	var i User
 	err := row.Scan(
 		&i.ID,

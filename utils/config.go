@@ -2,14 +2,17 @@ package utils
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 // Config is the configuration for the application.
 type Config struct {
-	DatabaseURL   string `mapstructure:"DATABASE_URL"`
-	ServerAddress string `mapstructure:"SERVER_ADDRESS"`
+	DatabaseURL         string        `mapstructure:"DATABASE_URL"`
+	ServerAddress       string        `mapstructure:"SERVER_ADDRESS"`
+	TokenSymmetricKey   string        `mapstructure:"ACCESS_SYMMETRIC_KEY"`
+	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -22,6 +25,8 @@ func LoadConfig(path string) (config Config, err error) {
 	// Read in environment variables
 	viper.BindEnv("DATABASE_URL")
 	viper.BindEnv("SERVER_ADDRESS")
+	viper.BindEnv("ACCESS_SYMMETRIC_KEY")
+	viper.BindEnv("ACCESS_TOKEN_DURATION")
 	viper.AutomaticEnv()
 
 	// Read in the config file

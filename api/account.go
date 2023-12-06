@@ -7,7 +7,17 @@ import (
 	"github.com/buddhimaaushan/mini_bank/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type AccountResponse struct {
+	ID             int64                `json:"id"`
+	Type           string               `json:"type"`
+	Balance        int64                `json:"balance"`
+	AccountHolders []sqlc.AccountHolder `json:"account_holders"`
+	Status         sqlc.Status          `json:"status"`
+	CreatedAt      pgtype.Timestamptz   `json:"created_at"`
+}
 
 type createAccountRequest struct {
 	Type    string  `json:"type" binding:"required"`
@@ -39,8 +49,16 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	// Create account response
+	accountResponse := AccountResponse{
+		ID:             result.Account.ID,
+		Type:           result.Account.Type,
+		Balance:        result.Account.Balance,
+		AccountHolders: result.AccountHolders,
+	}
+
 	// Return the account
-	ctx.JSON(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, accountResponse)
 }
 
 type getAccountRequest struct {
@@ -70,8 +88,33 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 		return
 	}
 
-	// Return the account
-	ctx.JSON(http.StatusOK, account)
+	// Get the account holders arguments
+	arg := sqlc.GetAccountHoldersByAccountIDParams{
+		AccID:  account.ID,
+		Limit:  10,
+		Offset: 0,
+	}
+
+	// Get the account holders
+	accountHolders, err := server.Store.GetAccountHoldersByAccountID(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// Create account response
+	accountResponse := AccountResponse{
+		ID:             account.ID,
+		Type:           account.Type,
+		Balance:        account.Balance,
+		AccountHolders: accountHolders,
+		Status:         account.AccStatus,
+		CreatedAt:      account.CreatedAt,
+	}
+
+	// Return the account response
+	ctx.JSON(http.StatusOK, accountResponse)
+
 }
 
 type getAccountsRequest struct {

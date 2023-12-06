@@ -79,6 +79,7 @@ type Querier interface {
 	GetTransfersToAsc(ctx context.Context, arg GetTransfersToAscParams) ([]Transfer, error)
 	GetTransfersToDesc(ctx context.Context, arg GetTransfersToDescParams) ([]Transfer, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
+	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUsersByAccStatusAsc(ctx context.Context, arg GetUsersByAccStatusAscParams) ([]User, error)
 	GetUsersByAccStatusDesc(ctx context.Context, arg GetUsersByAccStatusDescParams) ([]User, error)
 	GetUsersByCustRankAsc(ctx context.Context, arg GetUsersByCustRankAscParams) ([]User, error)

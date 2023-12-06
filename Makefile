@@ -19,8 +19,11 @@ migratedown:
 migratedown1:
 	migrate -path db/migrations -database "postgres://postgres:secret@localhost:5432/mini_bank?sslmode=disable" -verbose down 1
 
-sqlcgenerate: 
+sqlcgenerateWin: 
 	docker run --rm -v "${pwd}:/src" -w /src kjconroy/sqlc generate
+
+sqlcgenerate: 
+	docker run --rm -v $(pwd):/src -w /src kjconroy/sqlc generate
 
 test: 
 	go test -v -cover ./...

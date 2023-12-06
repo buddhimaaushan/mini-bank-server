@@ -14,7 +14,7 @@ VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
 
 -- name: DeleteUser :one
 
-DELETE FROM users WHERE id = $1::BIGINT RETURNING *;
+DELETE FROM users WHERE id = $1:: BIGINT RETURNING *;
 
 -- name: UpdateUser :one
 
@@ -262,3 +262,7 @@ OFFSET $2;
 -- name: GetUserByID :one
 
 SELECT * FROM users WHERE id = $1 LIMIT 1;
+
+-- name: GetUserByUsername :one
+
+SELECT * FROM users WHERE username = $1 LIMIT 1;
