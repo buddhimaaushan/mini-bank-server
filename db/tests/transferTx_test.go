@@ -297,7 +297,7 @@ func TestTransferTxAmountLTEQZero(t *testing.T) {
 		require.Error(t, err)
 
 		// Check if the error is an invalid amount error
-		require.Equal(t, err, app_error.TransferError.InvalidAmount)
+		require.Equal(t, err, app_error.TransferError.InvalidAmountError)
 
 	}
 

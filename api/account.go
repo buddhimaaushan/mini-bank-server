@@ -5,6 +5,7 @@ import (
 
 	"github.com/buddhimaaushan/mini_bank/db"
 	"github.com/buddhimaaushan/mini_bank/db/sqlc"
+	app_error "github.com/buddhimaaushan/mini_bank/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -30,7 +31,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
 		return
 	}
 
@@ -71,7 +72,7 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
 		return
 	}
 
@@ -80,11 +81,11 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 	if err != nil {
 		// Check if the error is a pgx.ErrNoRows
 		if err == pgx.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, errorResponse(app_error.DbError.AccountNotFoundError))
 			return
 		}
 
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.FetchingDataError))
 		return
 	}
 
@@ -98,7 +99,12 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 	// Get the account holders
 	accountHolders, err := server.Store.GetAccountHoldersByAccountID(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		if err == pgx.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(app_error.DbError.AccountHoldersNotFoundError))
+			return
+		}
+
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.FetchingDataError))
 		return
 	}
 
@@ -128,7 +134,7 @@ func (server *Server) GetAccounts(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
 		return
 	}
 
@@ -141,7 +147,7 @@ func (server *Server) GetAccounts(ctx *gin.Context) {
 	// Get the accounts
 	accounts, err := server.Store.GetAccounts(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.ApiError.FetchingDataError))
 		return
 	}
 

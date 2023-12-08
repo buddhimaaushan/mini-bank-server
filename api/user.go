@@ -1,10 +1,10 @@
 package api
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/buddhimaaushan/mini_bank/db/sqlc"
+	app_error "github.com/buddhimaaushan/mini_bank/errors"
 	"github.com/buddhimaaushan/mini_bank/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -52,14 +52,14 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
 		return
 	}
 
 	// Hash the password
 	hashedPassword, err := utils.GenerateHashPassword(req.Password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.HashError.HashPasswordError))
 		return
 	}
 
@@ -77,7 +77,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 	// Create user
 	user, err := server.Store.CreateUser(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.DbError.CreateUserError))
 		return
 	}
 
@@ -87,7 +87,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.TokenError.CreateTokenError))
 		return
 	}
 
@@ -112,7 +112,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
 		return
 	}
 
@@ -120,16 +120,16 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	user, err := server.Store.GetUserByUsername(ctx, req.Username)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, errorResponse(app_error.ApiError.InvalidUsernameOrPasswordError))
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.ApiError.FetchingDataError))
 		return
 	}
 
 	// Check if the password is correct
 	if !utils.CheckPasswordHash(req.Password, user.HashedPassword) {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(fmt.Errorf("incorrect password")))
+		ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.InvalidUsernameOrPasswordError))
 		return
 	}
 
@@ -139,7 +139,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.TokenError.CreateTokenError))
 		return
 	}
 

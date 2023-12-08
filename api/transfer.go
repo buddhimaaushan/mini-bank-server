@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/buddhimaaushan/mini_bank/db"
+	app_error "github.com/buddhimaaushan/mini_bank/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,7 +20,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(400, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
 		return
 	}
 
@@ -33,7 +34,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	// Create the transfer
 	transfer, err := server.Store.TransferTx(ctx, arg)
 	if err != nil {
-		ctx.JSON(400, errorResponse(err))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 

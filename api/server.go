@@ -1,9 +1,8 @@
 package api
 
 import (
-	"fmt"
-
 	"github.com/buddhimaaushan/mini_bank/db"
+	app_error "github.com/buddhimaaushan/mini_bank/errors"
 	"github.com/buddhimaaushan/mini_bank/token"
 	"github.com/buddhimaaushan/mini_bank/utils"
 	"github.com/gin-gonic/gin"
@@ -24,7 +23,7 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 	// Create a new token maker
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
-		return nil, fmt.Errorf("cannot create token maker: %w", err)
+		return nil, app_error.TokenError.CreateTokenMakerError.Wrap(err)
 	}
 
 	// Create a new server
