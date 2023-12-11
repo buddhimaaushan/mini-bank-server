@@ -19,4 +19,5 @@ const (
 	AccountNotFoundError
 	AccountHoldersNotFoundError
 	CreateTokenMakerError
+	CreateSessionError
 )

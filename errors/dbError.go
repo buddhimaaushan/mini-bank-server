@@ -34,6 +34,8 @@ func (e *dbError) Error() string {
 		return e.Format("account not found")
 	case AccountHoldersNotFoundError:
 		return e.Format("account holders not found")
+	case CreateSessionError:
+		return e.Format("unable to create session")
 	default:
 		return e.err.Error()
 	}
@@ -45,6 +47,7 @@ var DbError = struct {
 	UserNotFoundError           *dbError
 	AccountNotFoundError        *dbError
 	AccountHoldersNotFoundError *dbError
+	CreateSessionError          *dbError
 }{
 	CreateUserError: &dbError{
 		&baseError{
@@ -64,6 +67,11 @@ var DbError = struct {
 	AccountHoldersNotFoundError: &dbError{
 		&baseError{
 			kind: AccountHoldersNotFoundError,
+		},
+	},
+	CreateSessionError: &dbError{
+		&baseError{
+			kind: CreateSessionError,
 		},
 	},
 }
