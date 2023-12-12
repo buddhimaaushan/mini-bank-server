@@ -9,7 +9,6 @@ import (
 	"github.com/buddhimaaushan/mini_bank/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type createUserRequest struct {
@@ -143,15 +142,16 @@ func (server *Server) createTokens(res *Response) error {
 // Create session
 func (server *Server) createSession(ctx *gin.Context, res *Response) error {
 	_, err := server.Store.CreateSession(ctx, sqlc.CreateSessionParams{
+		ID:           utils.NewUUID(),
 		Username:     res.User.Username,
 		RefreshToken: res.RefreshToken,
 		UserAgent:    ctx.Request.UserAgent(),
 		ClientIp:     ctx.ClientIP(),
 		IsBlocked:    false,
-		ExpiresAt:    pgtype.Timestamptz{Time: res.RefreshTokenExpiresAt},
+		ExpiresAt:    utils.TimeToPgTime(res.RefreshTokenExpiresAt),
 	})
 	if err != nil {
-		return app_error.DbError.CreateSessionError
+		return app_error.DbError.CreateSessionError.Wrap(err)
 	}
 
 	return nil
@@ -168,17 +168,20 @@ type userResponse struct {
 }
 
 type Response struct {
-	AccessToken           string       `json:"access_token"`
-	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
-	RefreshToken          string       `json:"refresh_token"`
-	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
-	User                  userResponse `json:"user"`
+	AccessToken           string        `json:"access_token"`
+	AccessTokenExpiresAt  time.Time     `json:"access_token_expires_at"`
+	RefreshToken          string        `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time     `json:"refresh_token_expires_at"`
+	User                  *userResponse `json:"user"`
 }
 
-// CreateUser creates a new response
+// createResponse creates a new response
 func createResponse(ctx *gin.Context, server *Server, user sqlc.User) (res *Response, err error) {
+	// Init response
+	res = &Response{}
+
 	// Create user response
-	res.User = userResponse{
+	res.User = &userResponse{
 		ID:        user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
