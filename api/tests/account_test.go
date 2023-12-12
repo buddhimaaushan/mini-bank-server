@@ -54,13 +54,8 @@ func TestGetAccountAPI(t *testing.T) {
 
 			},
 			newRequest: func(server *api.Server, url string) *http.Request {
-				req, err := http.NewRequest("GET", url, nil)
-				require.NoError(t, err)
-
-				token, _, err := server.TokenMaker.CreateToken(user1.Username, time.Minute*15)
-				require.NoError(t, err)
-
-				req.Header.Set("authorization", fmt.Sprintf("Bearer %s", token))
+				token := createValidToken(t, server, user1.Username, time.Minute*15)
+				req := createRequest(t, server, url, token)
 				return req
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
@@ -84,13 +79,8 @@ func TestGetAccountAPI(t *testing.T) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(AccountTxResult.Account.ID)).Times(1).Return(sqlc.Account{}, pgx.ErrNoRows)
 			},
 			newRequest: func(server *api.Server, url string) *http.Request {
-				req, err := http.NewRequest("GET", url, nil)
-				require.NoError(t, err)
-
-				token, _, err := server.TokenMaker.CreateToken(user1.Username, time.Minute*15)
-				require.NoError(t, err)
-
-				req.Header.Set("authorization", fmt.Sprintf("Bearer %s", token))
+				token := createValidToken(t, server, user1.Username, time.Minute*15)
+				req := createRequest(t, server, url, token)
 				return req
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
@@ -105,13 +95,8 @@ func TestGetAccountAPI(t *testing.T) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(AccountTxResult.Account.ID)).Times(1).Return(sqlc.Account{}, pgx.ErrTxClosed)
 			},
 			newRequest: func(server *api.Server, url string) *http.Request {
-				req, err := http.NewRequest("GET", url, nil)
-				require.NoError(t, err)
-
-				token, _, err := server.TokenMaker.CreateToken(user1.Username, time.Minute*15)
-				require.NoError(t, err)
-
-				req.Header.Set("authorization", fmt.Sprintf("Bearer %s", token))
+				token := createValidToken(t, server, user1.Username, time.Minute*15)
+				req := createRequest(t, server, url, token)
 				return req
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
@@ -126,13 +111,8 @@ func TestGetAccountAPI(t *testing.T) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Any()).Times(0)
 			},
 			newRequest: func(server *api.Server, url string) *http.Request {
-				req, err := http.NewRequest("GET", url, nil)
-				require.NoError(t, err)
-
-				token, _, err := server.TokenMaker.CreateToken(user1.Username, time.Minute*15)
-				require.NoError(t, err)
-
-				req.Header.Set("authorization", fmt.Sprintf("Bearer %s", token))
+				token := createValidToken(t, server, user1.Username, time.Minute*15)
+				req := createRequest(t, server, url, token)
 				return req
 			},
 			checkResponse: func(t *testing.T, recoder *httptest.ResponseRecorder) {
@@ -218,4 +198,18 @@ func recoderBodyMatchAccount(t *testing.T, body *bytes.Buffer, account api.Accou
 		require.True(t, expected.CreatedAt.Time.Equal(gotAccount.AccountHolders[i].CreatedAt.Time))
 	}
 
+}
+
+func createRequest(t *testing.T, server *api.Server, url string, token string) *http.Request {
+	req, err := http.NewRequest("GET", url, nil)
+	require.NoError(t, err)
+
+	req.Header.Set("authorization", fmt.Sprintf("Bearer %s", token))
+	return req
+}
+
+func createValidToken(t *testing.T, server *api.Server, username string, duration time.Duration) string {
+	token, _, err := server.TokenMaker.CreateToken(username, duration)
+	require.NoError(t, err)
+	return token
 }
