@@ -20,7 +20,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrInvalidRequest.Wrap(err)))
 		return
 	}
 

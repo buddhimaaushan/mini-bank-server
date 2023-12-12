@@ -100,12 +100,12 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 
 		// Verify to and from accounts
 		if arg.FromAccountID == arg.ToAccountID {
-			return app_error.TransferError.UniqueAccountError
+			return app_error.TransferError.ErrUniqueAccount
 		}
 
 		// Verify the ammount is greater than 0
 		if arg.Amount <= 0 {
-			return app_error.TransferError.InvalidAmountError
+			return app_error.TransferError.ErrInvalidAmount
 		}
 
 		// Create a transfer using the CreateTransfer method of the queries.
@@ -173,9 +173,9 @@ func addMoney(ctx context.Context, q *sqlc.Queries, accountID1 int64, amount1 in
 	//  Verify the status of the first account
 	if !utils.IsAccountActive(account1) {
 		if amount1 <= 0 {
-			err = app_error.TransferError.FromAccountNotActiveError
+			err = app_error.TransferError.ErrFromAccountNotActive
 		}
-		err = app_error.TransferError.ToAccountNotActiveError
+		err = app_error.TransferError.ErrToAccountNotActive
 	}
 	if err != nil {
 		return
@@ -183,7 +183,7 @@ func addMoney(ctx context.Context, q *sqlc.Queries, accountID1 int64, amount1 in
 
 	// Verify the balance of the first account
 	if !utils.IsAccountBalanceSufficient(account1) {
-		err = app_error.TransferError.InsufficientAccountBalanceError
+		err = app_error.TransferError.ErrInsufficientAccountBalance
 		return
 	}
 
@@ -199,9 +199,9 @@ func addMoney(ctx context.Context, q *sqlc.Queries, accountID1 int64, amount1 in
 	//  Verify the status of the second account
 	if !utils.IsAccountActive(account2) {
 		if amount2 <= 0 {
-			err = app_error.TransferError.FromAccountNotActiveError
+			err = app_error.TransferError.ErrFromAccountNotActive
 		}
-		err = app_error.TransferError.ToAccountNotActiveError
+		err = app_error.TransferError.ErrToAccountNotActive
 	}
 	if err != nil {
 		return
@@ -209,7 +209,7 @@ func addMoney(ctx context.Context, q *sqlc.Queries, accountID1 int64, amount1 in
 
 	// Verify the balance of the second account
 	if !utils.IsAccountBalanceSufficient(account2) {
-		err = app_error.TransferError.InsufficientAccountBalanceError
+		err = app_error.TransferError.ErrInsufficientAccountBalance
 		return
 	}
 

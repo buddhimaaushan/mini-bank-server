@@ -8,9 +8,9 @@ import (
 )
 
 func TestErrorAsErrorType(t *testing.T) {
-	err1 := app_error.TransferError.FromAccountNotActiveError
-	err2 := app_error.ApiError.InvalidUsernameOrPasswordError
-	err3 := app_error.ApiError.InvalidUsernameOrPasswordError
+	err1 := app_error.TransferError.ErrFromAccountNotActive
+	err2 := app_error.ApiError.ErrErrInvalidUsernameOrPassword
+	err3 := app_error.ApiError.ErrErrInvalidUsernameOrPassword
 
 	require.False(t, err1.As(err2))
 	require.True(t, err2.As(err3))

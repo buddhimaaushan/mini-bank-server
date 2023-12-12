@@ -26,12 +26,18 @@ func (e *apiError) As(target interface{}) bool {
 // Error returns the error message.
 func (e *apiError) Error() string {
 	switch e.kind {
-	case InvalidUsernameOrPasswordError:
+	case ErrErrInvalidUsernameOrPassword:
 		return e.Format("invalid username or password")
-	case InvalidRequestError:
+	case ErrInvalidRequest:
 		return e.Format("invalid request")
-	case FetchingDataError:
+	case ErrDataFetching:
 		return e.Format("error while fetching data")
+	case ErrMissingAuthHeader:
+		return e.Format("authorization header is not provided")
+	case ErrInvalidAuthHeader:
+		return e.Format("invalid authorization header format")
+	case ErrInvalidAuthType:
+		return e.Format("unsupported authorization type")
 	default:
 		return e.err.Error()
 	}
@@ -39,23 +45,41 @@ func (e *apiError) Error() string {
 
 // TrasferError contains all transfer error types.
 var ApiError = struct {
-	InvalidUsernameOrPasswordError *apiError
-	InvalidRequestError            *apiError
-	FetchingDataError              *apiError
+	ErrErrInvalidUsernameOrPassword *apiError
+	ErrInvalidRequest               *apiError
+	ErrDataFetching                 *apiError
+	ErrMissingAuthHeader            *apiError
+	ErrInvalidAuthHeader            *apiError
+	ErrInvalidAuthType              *apiError
 }{
-	InvalidUsernameOrPasswordError: &apiError{
+	ErrErrInvalidUsernameOrPassword: &apiError{
 		&baseError{
-			kind: InvalidUsernameOrPasswordError,
+			kind: ErrErrInvalidUsernameOrPassword,
 		},
 	},
-	InvalidRequestError: &apiError{
+	ErrInvalidRequest: &apiError{
 		&baseError{
-			kind: InvalidRequestError,
+			kind: ErrInvalidRequest,
 		},
 	},
-	FetchingDataError: &apiError{
+	ErrDataFetching: &apiError{
 		&baseError{
-			kind: FetchingDataError,
+			kind: ErrDataFetching,
+		},
+	},
+	ErrMissingAuthHeader: &apiError{
+		&baseError{
+			kind: ErrMissingAuthHeader,
+		},
+	},
+	ErrInvalidAuthHeader: &apiError{
+		&baseError{
+			kind: ErrInvalidAuthHeader,
+		},
+	},
+	ErrInvalidAuthType: &apiError{
+		&baseError{
+			kind: ErrInvalidAuthType,
 		},
 	},
 }

@@ -26,14 +26,14 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrInvalidRequest.Wrap(err)))
 		return
 	}
 
 	// Hash the password
 	hashedPassword, err := utils.GenerateHashPassword(req.Password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.HashError.HashPasswordError))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.HashError.ErrHashPassword))
 		return
 	}
 
@@ -51,7 +51,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 	// Create user
 	user, err := server.Store.CreateUser(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.DbError.CreateUserError))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.DbError.ErrCreateUser))
 		return
 	}
 
@@ -77,7 +77,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrInvalidRequest.Wrap(err)))
 		return
 	}
 
@@ -85,16 +85,16 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	user, err := server.Store.GetUserByUsername(ctx, req.Username)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(app_error.ApiError.InvalidUsernameOrPasswordError))
+			ctx.JSON(http.StatusNotFound, errorResponse(app_error.ApiError.ErrErrInvalidUsernameOrPassword))
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.ApiError.FetchingDataError))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.ApiError.ErrDataFetching))
 		return
 	}
 
 	// Check if the password is correct
 	if !utils.CheckPasswordHash(req.Password, user.HashedPassword) {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.InvalidUsernameOrPasswordError))
+		ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.ErrErrInvalidUsernameOrPassword))
 		return
 	}
 
@@ -113,21 +113,21 @@ func (server *Server) loginUser(ctx *gin.Context) {
 // createTokens creates authentication and authorization tokens
 func (server *Server) createTokens(res *Response) error {
 	// Create access token
-	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
+	accessToken, accessPayload, err := server.TokenMaker.CreateToken(
 		res.User.Username,
 		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
-		return app_error.TokenError.CreateTokenError
+		return app_error.TokenError.ErrCreateToken
 	}
 
 	// Create refresh token
-	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
+	refreshToken, refreshPayload, err := server.TokenMaker.CreateToken(
 		res.User.Username,
 		server.Config.RefreshTokenDuration,
 	)
 	if err != nil {
-		return app_error.TokenError.CreateTokenError
+		return app_error.TokenError.ErrCreateToken
 	}
 
 	// Add token data to the response
@@ -151,7 +151,7 @@ func (server *Server) createSession(ctx *gin.Context, res *Response) error {
 		ExpiresAt:    utils.TimeToPgTime(res.RefreshTokenExpiresAt),
 	})
 	if err != nil {
-		return app_error.DbError.CreateSessionError.Wrap(err)
+		return app_error.DbError.ErrCreateSession.Wrap(err)
 	}
 
 	return nil

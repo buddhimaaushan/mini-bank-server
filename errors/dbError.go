@@ -26,15 +26,15 @@ func (e *dbError) As(target interface{}) bool {
 // Error returns the error message.
 func (e *dbError) Error() string {
 	switch e.kind {
-	case CreateUserError:
+	case ErrCreateUser:
 		return e.Format("unable to create user")
-	case UserNotFoundError:
+	case ErrUserNotFound:
 		return e.Format("user not found")
-	case AccountNotFoundError:
+	case ErrAccountNotFound:
 		return e.Format("account not found")
-	case AccountHoldersNotFoundError:
+	case ErrAccountHoldersNotFound:
 		return e.Format("account holders not found")
-	case CreateSessionError:
+	case ErrCreateSession:
 		return e.Format("unable to create session")
 	default:
 		return e.err.Error()
@@ -43,35 +43,35 @@ func (e *dbError) Error() string {
 
 // TrasferError contains all transfer error types.
 var DbError = struct {
-	CreateUserError             *dbError
-	UserNotFoundError           *dbError
-	AccountNotFoundError        *dbError
-	AccountHoldersNotFoundError *dbError
-	CreateSessionError          *dbError
+	ErrCreateUser             *dbError
+	ErrUserNotFound           *dbError
+	ErrAccountNotFound        *dbError
+	ErrAccountHoldersNotFound *dbError
+	ErrCreateSession          *dbError
 }{
-	CreateUserError: &dbError{
+	ErrCreateUser: &dbError{
 		&baseError{
-			kind: CreateUserError,
+			kind: ErrCreateUser,
 		},
 	},
-	UserNotFoundError: &dbError{
+	ErrUserNotFound: &dbError{
 		&baseError{
-			kind: UserNotFoundError,
+			kind: ErrUserNotFound,
 		},
 	},
-	AccountNotFoundError: &dbError{
+	ErrAccountNotFound: &dbError{
 		&baseError{
-			kind: AccountNotFoundError,
+			kind: ErrAccountNotFound,
 		},
 	},
-	AccountHoldersNotFoundError: &dbError{
+	ErrAccountHoldersNotFound: &dbError{
 		&baseError{
-			kind: AccountHoldersNotFoundError,
+			kind: ErrAccountHoldersNotFound,
 		},
 	},
-	CreateSessionError: &dbError{
+	ErrCreateSession: &dbError{
 		&baseError{
-			kind: CreateSessionError,
+			kind: ErrCreateSession,
 		},
 	},
 }

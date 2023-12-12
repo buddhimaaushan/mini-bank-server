@@ -31,7 +31,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrInvalidRequest.Wrap(err)))
 		return
 	}
 
@@ -72,7 +72,7 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrInvalidRequest.Wrap(err)))
 		return
 	}
 
@@ -81,11 +81,11 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 	if err != nil {
 		// Check if the error is a pgx.ErrNoRows
 		if err == pgx.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(app_error.DbError.AccountNotFoundError))
+			ctx.JSON(http.StatusNotFound, errorResponse(app_error.DbError.ErrAccountNotFound))
 			return
 		}
 
-		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.FetchingDataError))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrDataFetching))
 		return
 	}
 
@@ -100,11 +100,11 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 	accountHolders, err := server.Store.GetAccountHoldersByAccountID(ctx, arg)
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(app_error.DbError.AccountHoldersNotFoundError))
+			ctx.JSON(http.StatusNotFound, errorResponse(app_error.DbError.ErrAccountHoldersNotFound))
 			return
 		}
 
-		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.FetchingDataError))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrDataFetching))
 		return
 	}
 
@@ -134,7 +134,7 @@ func (server *Server) GetAccounts(ctx *gin.Context) {
 
 	// Check if the request body is valid
 	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.InvalidRequestError.Wrap(err)))
+		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrInvalidRequest.Wrap(err)))
 		return
 	}
 
@@ -147,7 +147,7 @@ func (server *Server) GetAccounts(ctx *gin.Context) {
 	// Get the accounts
 	accounts, err := server.Store.GetAccounts(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.ApiError.FetchingDataError))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(app_error.ApiError.ErrDataFetching))
 		return
 	}
 

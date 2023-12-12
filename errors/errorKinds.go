@@ -4,20 +4,24 @@ type errKind int
 
 const (
 	_ errKind = iota
-	ToAccountNotActiveError
-	FromAccountNotActiveError
-	InsufficientAccountBalanceError
-	UniqueAccountError
-	InvalidAmountError
-	InvalidUsernameOrPasswordError
-	InvalidRequestError
-	CreateTokenError
-	HashPasswordError
-	CreateUserError
-	UserNotFoundError
-	FetchingDataError
-	AccountNotFoundError
-	AccountHoldersNotFoundError
-	CreateTokenMakerError
-	CreateSessionError
+	ErrToAccountNotActive
+	ErrFromAccountNotActive
+	ErrInsufficientAccountBalance
+	ErrUniqueAccount
+	ErrInvalidAmount
+	ErrErrInvalidUsernameOrPassword
+	ErrInvalidRequest
+	ErrCreateToken
+	ErrHashPassword
+	ErrCreateUser
+	ErrUserNotFound
+	ErrDataFetching
+	ErrAccountNotFound
+	ErrAccountHoldersNotFound
+	ErrCreateTokenMaker
+	ErrCreateSession
+	ErrMissingAuthHeader
+	ErrInvalidAuthHeader
+	ErrInvalidAuthType
+	ErrInvalidToken
 )

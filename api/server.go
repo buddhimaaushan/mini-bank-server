@@ -14,7 +14,7 @@ import (
 type Server struct {
 	Config     utils.Config
 	Store      db.Store
-	tokenMaker token.Maker
+	TokenMaker token.Maker
 	Router     *gin.Engine
 }
 
@@ -23,11 +23,11 @@ func NewServer(config utils.Config, store db.Store) (*Server, error) {
 	// Create a new token maker
 	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
 	if err != nil {
-		return nil, app_error.TokenError.CreateTokenMakerError.Wrap(err)
+		return nil, app_error.TokenError.ErrCreateTokenMaker.Wrap(err)
 	}
 
 	// Create a new server
-	server := &Server{Config: config, Store: store, tokenMaker: tokenMaker}
+	server := &Server{Config: config, Store: store, TokenMaker: tokenMaker}
 
 	// Set validators for gin
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -61,13 +61,16 @@ func (server *Server) setupRouter() {
 	router.POST("/register", server.createUser)
 	router.POST("/login", server.loginUser)
 
+	// Authentication middleware
+	authRoutes := router.Group("/").Use(authMiddleware(server.TokenMaker))
+
 	// Routes for accounts
-	router.POST("/accounts", server.createAccount)
-	router.GET("/accounts", server.GetAccounts)
-	router.GET("/accounts/:id", server.GetAccount)
+	authRoutes.POST("/accounts", server.createAccount)
+	authRoutes.GET("/accounts", server.GetAccounts)
+	authRoutes.GET("/accounts/:id", server.GetAccount)
 
 	// Routes for transfers
-	router.POST("/transfers", server.createTransfer)
+	authRoutes.POST("/transfers", server.createTransfer)
 
 	server.Router = router
 }

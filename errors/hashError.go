@@ -26,7 +26,7 @@ func (e *hashError) As(target interface{}) bool {
 // Error returns the error message.
 func (e *hashError) Error() string {
 	switch e.kind {
-	case HashPasswordError:
+	case ErrHashPassword:
 		return e.Format("unable to hash password")
 
 	default:
@@ -36,11 +36,11 @@ func (e *hashError) Error() string {
 
 // TrasferError contains all transfer error types.
 var HashError = struct {
-	HashPasswordError *hashError
+	ErrHashPassword *hashError
 }{
-	HashPasswordError: &hashError{
+	ErrHashPassword: &hashError{
 		&baseError{
-			kind: HashPasswordError,
+			kind: ErrHashPassword,
 		},
 	},
 }

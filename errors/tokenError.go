@@ -26,10 +26,12 @@ func (e *tokenError) As(target interface{}) bool {
 // Error returns the error message.
 func (e *tokenError) Error() string {
 	switch e.kind {
-	case CreateTokenError:
+	case ErrCreateToken:
 		return e.Format("unable to create auth token")
-	case CreateTokenMakerError:
+	case ErrCreateTokenMaker:
 		return e.Format("unable to create token maker")
+	case ErrInvalidToken:
+		return e.Format("invalid token")
 	default:
 		return e.err.Error()
 	}
@@ -37,17 +39,23 @@ func (e *tokenError) Error() string {
 
 // TrasferError contains all transfer error types.
 var TokenError = struct {
-	CreateTokenError      *tokenError
-	CreateTokenMakerError *tokenError
+	ErrCreateToken      *tokenError
+	ErrCreateTokenMaker *tokenError
+	ErrInvalidToken     *tokenError
 }{
-	CreateTokenError: &tokenError{
+	ErrCreateToken: &tokenError{
 		&baseError{
-			kind: CreateTokenError,
+			kind: ErrCreateToken,
 		},
 	},
-	CreateTokenMakerError: &tokenError{
+	ErrCreateTokenMaker: &tokenError{
 		&baseError{
-			kind: CreateTokenMakerError,
+			kind: ErrCreateTokenMaker,
+		},
+	},
+	ErrInvalidToken: &tokenError{
+		&baseError{
+			kind: ErrInvalidToken,
 		},
 	},
 }

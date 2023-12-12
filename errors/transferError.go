@@ -26,15 +26,15 @@ func (e *transferError) As(target interface{}) bool {
 // Error returns the error message.
 func (e *transferError) Error() string {
 	switch e.kind {
-	case FromAccountNotActiveError:
+	case ErrFromAccountNotActive:
 		return e.Format("your account is not active")
-	case ToAccountNotActiveError:
+	case ErrToAccountNotActive:
 		return e.Format("the account you are trying to transfer is not active")
-	case InsufficientAccountBalanceError:
+	case ErrInsufficientAccountBalance:
 		return e.Format("your account balance is not sufficient for this transaction")
-	case UniqueAccountError:
+	case ErrUniqueAccount:
 		return e.Format("cannot transfer to the same account")
-	case InvalidAmountError:
+	case ErrInvalidAmount:
 		return e.Format("transfer amount should be greater than 0")
 	default:
 		return e.err.Error()
@@ -43,35 +43,35 @@ func (e *transferError) Error() string {
 
 // TrasferError contains all transfer error types.
 var TransferError = struct {
-	FromAccountNotActiveError       *transferError
-	ToAccountNotActiveError         *transferError
-	InsufficientAccountBalanceError *transferError
-	UniqueAccountError              *transferError
-	InvalidAmountError              *transferError
+	ErrFromAccountNotActive       *transferError
+	ErrToAccountNotActive         *transferError
+	ErrInsufficientAccountBalance *transferError
+	ErrUniqueAccount              *transferError
+	ErrInvalidAmount              *transferError
 }{
-	FromAccountNotActiveError: &transferError{
+	ErrFromAccountNotActive: &transferError{
 		&baseError{
-			kind: FromAccountNotActiveError,
+			kind: ErrFromAccountNotActive,
 		},
 	},
-	ToAccountNotActiveError: &transferError{
+	ErrToAccountNotActive: &transferError{
 		&baseError{
-			kind: ToAccountNotActiveError,
+			kind: ErrToAccountNotActive,
 		},
 	},
-	InsufficientAccountBalanceError: &transferError{
+	ErrInsufficientAccountBalance: &transferError{
 		&baseError{
-			kind: InsufficientAccountBalanceError,
+			kind: ErrInsufficientAccountBalance,
 		},
 	},
-	UniqueAccountError: &transferError{
+	ErrUniqueAccount: &transferError{
 		&baseError{
-			kind: UniqueAccountError,
+			kind: ErrUniqueAccount,
 		},
 	},
-	InvalidAmountError: &transferError{
+	ErrInvalidAmount: &transferError{
 		&baseError{
-			kind: InvalidAmountError,
+			kind: ErrInvalidAmount,
 		},
 	},
 }
