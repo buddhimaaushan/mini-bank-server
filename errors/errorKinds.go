@@ -25,4 +25,5 @@ const (
 	ErrInvalidAuthType
 	ErrInvalidToken
 	ErrUnauthorized
+	ErrAccountNotActive
 )

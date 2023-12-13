@@ -40,6 +40,8 @@ func (e *apiError) Error() string {
 		return e.Format("unsupported authorization type")
 	case ErrUnauthorized:
 		return e.Format("you are not authorized")
+	case ErrAccountNotActive:
+		return e.Format("your account is not active, please activate your account")
 	default:
 		return e.err.Error()
 	}
@@ -54,6 +56,7 @@ var ApiError = struct {
 	ErrInvalidAuthHeader            *apiError
 	ErrInvalidAuthType              *apiError
 	ErrUnauthorized                 *apiError
+	ErrAccountNotActive             *apiError
 }{
 	ErrErrInvalidUsernameOrPassword: &apiError{
 		&baseError{
@@ -88,6 +91,11 @@ var ApiError = struct {
 	ErrUnauthorized: &apiError{
 		&baseError{
 			kind: ErrUnauthorized,
+		},
+	},
+	ErrAccountNotActive: &apiError{
+		&baseError{
+			kind: ErrAccountNotActive,
 		},
 	},
 }

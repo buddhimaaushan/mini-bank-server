@@ -48,7 +48,11 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			return
 		}
 
-		// TODO: Check account status
+		// Check account status
+		if payload.AccStatus != "active" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.ErrAccountNotActive))
+			return
+		}
 
 		// Set payload
 		c.Set(authorizationPayloadKey, payload)
