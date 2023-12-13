@@ -48,6 +48,8 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 			return
 		}
 
+		// TODO: Check account status
+
 		// Set payload
 		c.Set(authorizationPayloadKey, payload)
 

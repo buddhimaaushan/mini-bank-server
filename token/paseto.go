@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/aead/chacha20poly1305"
+	"github.com/buddhimaaushan/mini_bank/db/sqlc"
 	"github.com/google/uuid"
 	"github.com/o1egl/paseto"
 )
@@ -31,9 +32,9 @@ func NewPasetoMaker(symmetricKey string) (Maker, error) {
 }
 
 // CreateToken creates a new token for a specific username and duration
-func (maker *PasetoMaker) CreateToken(tokenID uuid.UUID, userID int64, username string, role string, department string, duration time.Duration) (string, *Payload, error) {
+func (maker *PasetoMaker) CreateToken(tokenID uuid.UUID, userID int64, username string, role string, accStatus sqlc.Status, duration time.Duration) (string, *Payload, error) {
 
-	Payload, err := NewPayload(tokenID, userID, username, role, department, duration)
+	Payload, err := NewPayload(tokenID, userID, username, role, accStatus, duration)
 	if err != nil {
 		return "", Payload, err
 	}

@@ -27,8 +27,13 @@ func TestGetAccountAPI(t *testing.T) {
 	// Create users
 	user1 := utils.CreateRandomUser()
 	user1.Role = pgtype.Text{String: "admin", Valid: true}
+	user1.AccStatus = "active"
 	user2 := utils.CreateRandomUser()
 	user2.Role = pgtype.Text{String: "admin", Valid: true}
+	user2.AccStatus = "active"
+	user3 := utils.CreateRandomUser()
+	user3.Role = pgtype.Text{String: "admin", Valid: true}
+	user3.AccStatus = "inactive"
 
 	// Create a new account
 	AccountTxResult := createRandomAccount([]sqlc.User{user1, user2})
@@ -57,7 +62,7 @@ func TestGetAccountAPI(t *testing.T) {
 
 			},
 			newRequest: func(server *api.Server, url string) *http.Request {
-				token := createValidToken(t, server, uuid.New(), user1.ID, user1.Username, user1.Role.String, user1.Department.String, time.Minute*15)
+				token := createValidToken(t, server, uuid.New(), user1.ID, user1.Username, user1.Role.String, user1.AccStatus, time.Minute*15)
 				req := createRequest(t, server, url, token)
 				return req
 			},
@@ -82,7 +87,7 @@ func TestGetAccountAPI(t *testing.T) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(AccountTxResult.Account.ID)).Times(1).Return(sqlc.Account{}, pgx.ErrNoRows)
 			},
 			newRequest: func(server *api.Server, url string) *http.Request {
-				token := createValidToken(t, server, uuid.New(), user1.ID, user1.Username, user1.Role.String, user1.Department.String, time.Minute*15)
+				token := createValidToken(t, server, uuid.New(), user1.ID, user1.Username, user1.Role.String, user1.AccStatus, time.Minute*15)
 				req := createRequest(t, server, url, token)
 				return req
 			},
@@ -98,7 +103,7 @@ func TestGetAccountAPI(t *testing.T) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Eq(AccountTxResult.Account.ID)).Times(1).Return(sqlc.Account{}, pgx.ErrTxClosed)
 			},
 			newRequest: func(server *api.Server, url string) *http.Request {
-				token := createValidToken(t, server, uuid.New(), user1.ID, user1.Username, user1.Role.String, user1.Department.String, time.Minute*15)
+				token := createValidToken(t, server, uuid.New(), user1.ID, user1.Username, user1.Role.String, user1.AccStatus, time.Minute*15)
 				req := createRequest(t, server, url, token)
 				return req
 			},
@@ -114,7 +119,7 @@ func TestGetAccountAPI(t *testing.T) {
 				store.EXPECT().GetAccount(gomock.Any(), gomock.Any()).Times(0)
 			},
 			newRequest: func(server *api.Server, url string) *http.Request {
-				token := createValidToken(t, server, uuid.New(), user1.ID, user1.Username, user1.Role.String, user1.Department.String, time.Minute*15)
+				token := createValidToken(t, server, uuid.New(), user1.ID, user1.Username, user1.Role.String, user1.AccStatus, time.Minute*15)
 				req := createRequest(t, server, url, token)
 				return req
 			},
@@ -211,8 +216,8 @@ func createRequest(t *testing.T, server *api.Server, url string, token string) *
 	return req
 }
 
-func createValidToken(t *testing.T, server *api.Server, tokenID uuid.UUID, userID int64, username string, role string, department string, duration time.Duration) string {
-	token, _, err := server.TokenMaker.CreateToken(tokenID, userID, username, role, department, duration)
+func createValidToken(t *testing.T, server *api.Server, tokenID uuid.UUID, userID int64, username string, role string, accStatus sqlc.Status, duration time.Duration) string {
+	token, _, err := server.TokenMaker.CreateToken(tokenID, userID, username, role, accStatus, duration)
 	require.NoError(t, err)
 	return token
 }

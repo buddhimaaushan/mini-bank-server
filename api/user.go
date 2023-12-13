@@ -119,7 +119,7 @@ func (server *Server) createTokens(res *Response, sessionID uuid.UUID) error {
 		res.User.ID,
 		res.User.Username,
 		res.User.Role,
-		res.User.Department,
+		res.User.AccStatus,
 		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -132,7 +132,7 @@ func (server *Server) createTokens(res *Response, sessionID uuid.UUID) error {
 		res.User.ID,
 		res.User.Username,
 		res.User.Role,
-		res.User.Department,
+		res.User.AccStatus,
 		server.Config.RefreshTokenDuration,
 	)
 	if err != nil {
@@ -167,15 +167,15 @@ func (server *Server) createSession(ctx *gin.Context, res *Response) (*sqlc.Sess
 }
 
 type userResponse struct {
-	ID         int64  `json:"id"`
-	FirstName  string `json:"first_name"`
-	LastName   string `json:"last_name"`
-	Username   string `json:"username" `
-	Nic        string `json:"nic"`
-	Email      string `json:"email"`
-	Phone      string `json:"phone" `
-	Department string `json:"department" `
-	Role       string `json:"role" `
+	ID        int64       `json:"id"`
+	FirstName string      `json:"first_name"`
+	LastName  string      `json:"last_name"`
+	Username  string      `json:"username" `
+	Nic       string      `json:"nic"`
+	Email     string      `json:"email"`
+	Phone     string      `json:"phone" `
+	AccStatus sqlc.Status `json:"acc_status" `
+	Role      string      `json:"role" `
 }
 
 type Response struct {
@@ -193,15 +193,15 @@ func createResponse(ctx *gin.Context, server *Server, user sqlc.User) (res *Resp
 
 	// Create user response
 	res.User = &userResponse{
-		ID:         user.ID,
-		FirstName:  user.FirstName,
-		LastName:   user.LastName,
-		Username:   user.Username,
-		Nic:        user.Nic,
-		Email:      user.Email,
-		Phone:      user.Phone,
-		Role:       user.Role.String,
-		Department: user.Department.String,
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Username:  user.Username,
+		Nic:       user.Nic,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		Role:      user.Role.String,
+		AccStatus: user.AccStatus,
 	}
 
 	// Create session
