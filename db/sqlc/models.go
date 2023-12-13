@@ -58,6 +58,50 @@ func (ns NullRank) Value() (driver.Value, error) {
 	return string(ns.Rank), nil
 }
 
+type Role string
+
+const (
+	RoleAdmin      Role = "admin"
+	RoleManager    Role = "manager"
+	RoleBankTeller Role = "bankTeller"
+	RoleCustomer   Role = "customer"
+)
+
+func (e *Role) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Role(s)
+	case string:
+		*e = Role(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Role: %T", src)
+	}
+	return nil
+}
+
+type NullRole struct {
+	Role  Role `json:"role"`
+	Valid bool `json:"valid"` // Valid is true if Role is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.Role, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Role.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Role), nil
+}
+
 type Status string
 
 const (
@@ -136,9 +180,10 @@ type Session struct {
 }
 
 type Transfer struct {
-	ID            int64 `db:"id" json:"id"`
-	FromAccountID int64 `db:"from_account_id" json:"from_account_id"`
-	ToAccountID   int64 `db:"to_account_id" json:"to_account_id"`
+	ID             int64 `db:"id" json:"id"`
+	FromAccountID  int64 `db:"from_account_id" json:"from_account_id"`
+	ToAccountID    int64 `db:"to_account_id" json:"to_account_id"`
+	TransferedByID int64 `db:"transfered_by_id" json:"transfered_by_id"`
 	// must be positive
 	Amount    int64              `db:"amount" json:"amount"`
 	CreatedAt pgtype.Timestamptz `db:"created_at" json:"created_at"`

@@ -70,9 +70,10 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*sqlc.Queries) error)
 }
 
 type TransferTxParams struct {
-	FromAccountID int64 `json:"from_account_id"`
-	ToAccountID   int64 `json:"to_account_id"`
-	Amount        int64 `json:"amount"`
+	FromAccountID  int64 `json:"from_account_id"`
+	ToAccountID    int64 `json:"to_account_id"`
+	TransferedByID int64 `json:"transfered_by_id"`
+	Amount         int64 `json:"amount"`
 }
 
 type TransferTxResult struct {
@@ -110,9 +111,10 @@ func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (Tr
 
 		// Create a transfer using the CreateTransfer method of the queries.
 		result.Transfer, err = q.CreateTransfer(ctx, sqlc.CreateTransferParams{
-			FromAccountID: arg.FromAccountID,
-			ToAccountID:   arg.ToAccountID,
-			Amount:        arg.Amount,
+			FromAccountID:  arg.FromAccountID,
+			ToAccountID:    arg.ToAccountID,
+			TransferedByID: arg.TransferedByID,
+			Amount:         arg.Amount,
 		})
 		if err != nil {
 			return err

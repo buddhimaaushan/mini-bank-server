@@ -8,6 +8,7 @@ import (
 	app_error "github.com/buddhimaaushan/mini_bank/errors"
 	"github.com/buddhimaaushan/mini_bank/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -111,10 +112,14 @@ func (server *Server) loginUser(ctx *gin.Context) {
 }
 
 // createTokens creates authentication and authorization tokens
-func (server *Server) createTokens(res *Response) error {
+func (server *Server) createTokens(res *Response, sessionID uuid.UUID) error {
 	// Create access token
 	accessToken, accessPayload, err := server.TokenMaker.CreateToken(
+		uuid.New(),
+		res.User.ID,
 		res.User.Username,
+		res.User.Role,
+		res.User.Department,
 		server.Config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -123,7 +128,11 @@ func (server *Server) createTokens(res *Response) error {
 
 	// Create refresh token
 	refreshToken, refreshPayload, err := server.TokenMaker.CreateToken(
+		sessionID,
+		res.User.ID,
 		res.User.Username,
+		res.User.Role,
+		res.User.Department,
 		server.Config.RefreshTokenDuration,
 	)
 	if err != nil {
@@ -140,8 +149,8 @@ func (server *Server) createTokens(res *Response) error {
 }
 
 // Create session
-func (server *Server) createSession(ctx *gin.Context, res *Response) error {
-	_, err := server.Store.CreateSession(ctx, sqlc.CreateSessionParams{
+func (server *Server) createSession(ctx *gin.Context, res *Response) (*sqlc.Session, error) {
+	session, err := server.Store.CreateSession(ctx, sqlc.CreateSessionParams{
 		ID:           utils.NewUUID(),
 		Username:     res.User.Username,
 		RefreshToken: res.RefreshToken,
@@ -151,20 +160,22 @@ func (server *Server) createSession(ctx *gin.Context, res *Response) error {
 		ExpiresAt:    utils.TimeToPgTime(res.RefreshTokenExpiresAt),
 	})
 	if err != nil {
-		return app_error.DbError.ErrCreateSession.Wrap(err)
+		return nil, app_error.DbError.ErrCreateSession.Wrap(err)
 	}
 
-	return nil
+	return &session, nil
 }
 
 type userResponse struct {
-	ID        int64  `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Username  string `json:"username" `
-	Nic       string `json:"nic"`
-	Email     string `json:"email"`
-	Phone     string `json:"phone" `
+	ID         int64  `json:"id"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	Username   string `json:"username" `
+	Nic        string `json:"nic"`
+	Email      string `json:"email"`
+	Phone      string `json:"phone" `
+	Department string `json:"department" `
+	Role       string `json:"role" `
 }
 
 type Response struct {
@@ -182,23 +193,25 @@ func createResponse(ctx *gin.Context, server *Server, user sqlc.User) (res *Resp
 
 	// Create user response
 	res.User = &userResponse{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Username:  user.Username,
-		Nic:       user.Nic,
-		Email:     user.Email,
-		Phone:     user.Phone,
+		ID:         user.ID,
+		FirstName:  user.FirstName,
+		LastName:   user.LastName,
+		Username:   user.Username,
+		Nic:        user.Nic,
+		Email:      user.Email,
+		Phone:      user.Phone,
+		Role:       user.Role.String,
+		Department: user.Department.String,
 	}
 
-	// Creates  authentication and authorization tokens
-	err = server.createTokens(res)
+	// Create session
+	session, err := server.createSession(ctx, res)
 	if err != nil {
 		return nil, err
 	}
 
-	// Create session
-	err = server.createSession(ctx, res)
+	// Creates  authentication and authorization tokens
+	err = server.createTokens(res, session.ID.Bytes)
 	if err != nil {
 		return nil, err
 	}

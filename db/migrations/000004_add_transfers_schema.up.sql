@@ -3,6 +3,7 @@ CREATE TABLE
         "id" bigserial PRIMARY KEY,
         "from_account_id" bigint NOT NULL,
         "to_account_id" bigint NOT NULL,
+        "transfered_by_id" bigint NOT NULL,
         "amount" bigint NOT NULL,
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT (now())
     );
@@ -11,7 +12,9 @@ CREATE INDEX ON "transfers" ("from_account_id");
 
 CREATE INDEX ON "transfers" ("to_account_id");
 
-CREATE INDEX ON "transfers" ("from_account_id", "to_account_id");
+CREATE INDEX ON "transfers" ("transfered_by_id");
+
+CREATE INDEX ON "transfers" ( "from_account_id", "to_account_id" );
 
 CREATE INDEX ON "transfers" ("amount");
 

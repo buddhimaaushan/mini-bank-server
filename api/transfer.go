@@ -4,7 +4,9 @@ import (
 	"net/http"
 
 	"github.com/buddhimaaushan/mini_bank/db"
+	"github.com/buddhimaaushan/mini_bank/db/sqlc"
 	app_error "github.com/buddhimaaushan/mini_bank/errors"
+	"github.com/buddhimaaushan/mini_bank/token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,6 +31,28 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		FromAccountID: req.FromAccountID,
 		ToAccountID:   req.ToAccountID,
 		Amount:        req.Amount,
+	}
+
+	// Verify access roles
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if payload.Role == "admin" || payload.Role == "bankTeller" {
+		arg.TransferedByID = payload.UserID
+	} else if payload.Role == "customer" {
+		accountHolders, err := server.Store.GetAccountHoldersByAccountID(ctx, sqlc.GetAccountHoldersByAccountIDParams{
+			AccID:  req.FromAccountID,
+			Limit:  10,
+			Offset: 0,
+		})
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.ErrUnauthorized))
+		}
+		for i := range accountHolders {
+			if accountHolders[i].UserID == payload.UserID {
+				arg.TransferedByID = payload.UserID
+			}
+		}
+	} else {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.ErrUnauthorized))
 	}
 
 	// Create the transfer

@@ -6,6 +6,7 @@ import (
 	"github.com/buddhimaaushan/mini_bank/db"
 	"github.com/buddhimaaushan/mini_bank/db/sqlc"
 	app_error "github.com/buddhimaaushan/mini_bank/errors"
+	"github.com/buddhimaaushan/mini_bank/token"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -40,7 +41,18 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		Type:      req.Type,
 		Balance:   0,
 		AccStatus: sqlc.StatusInactive,
-		UserIDs:   req.UserIDs,
+	}
+
+	// Verify access roles
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if payload.Role == "admin" || payload.Role == "bankTeller" {
+		arg.UserIDs = req.UserIDs
+	} else if payload.Role == "customer" && payload.UserID == req.UserIDs[0] {
+		arg.UserIDs = make([]int64, 1)
+		arg.UserIDs[0] = req.UserIDs[0]
+	} else {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.ErrUnauthorized))
+		return
 	}
 
 	// Create account and account holders
@@ -91,7 +103,7 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 
 	// Get the account holders arguments
 	arg := sqlc.GetAccountHoldersByAccountIDParams{
-		AccID:  account.ID,
+		AccID:  req.ID,
 		Limit:  10,
 		Offset: 0,
 	}
@@ -99,13 +111,26 @@ func (server *Server) GetAccount(ctx *gin.Context) {
 	// Get the account holders
 	accountHolders, err := server.Store.GetAccountHoldersByAccountID(ctx, arg)
 	if err != nil {
-		if err == pgx.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(app_error.DbError.ErrAccountHoldersNotFound))
-			return
-		}
-
 		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrDataFetching))
 		return
+	}
+
+	// Verify access roles
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if payload.Role != "admin" && payload.Role != "bankTeller" && payload.Role != "customer" {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.ErrUnauthorized))
+		return
+	} else if payload.Role == "customer" {
+		temp := true
+		for i := range accountHolders {
+			if accountHolders[i].UserID == payload.UserID {
+				temp = false
+			}
+		}
+		if temp {
+			ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.ErrUnauthorized))
+			return
+		}
 	}
 
 	// Create account response
@@ -135,6 +160,13 @@ func (server *Server) GetAccounts(ctx *gin.Context) {
 	// Check if the request body is valid
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(app_error.ApiError.ErrInvalidRequest.Wrap(err)))
+		return
+	}
+
+	// Verify access roles
+	payload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if payload.Role != "admin" && payload.Role != "bankTeller" {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(app_error.ApiError.ErrUnauthorized))
 		return
 	}
 

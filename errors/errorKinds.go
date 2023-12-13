@@ -24,4 +24,5 @@ const (
 	ErrInvalidAuthHeader
 	ErrInvalidAuthType
 	ErrInvalidToken
+	ErrUnauthorized
 )

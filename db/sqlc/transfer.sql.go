@@ -15,24 +15,33 @@ INSERT INTO
     transfers (
         from_account_id,
         to_account_id,
+        transfered_by_id,
         amount
     )
-VALUES ($1, $2, $3) RETURNING id, from_account_id, to_account_id, amount, created_at
+VALUES ($1, $2, $3, $4)
+RETURNING id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 `
 
 type CreateTransferParams struct {
-	FromAccountID int64 `db:"from_account_id" json:"from_account_id"`
-	ToAccountID   int64 `db:"to_account_id" json:"to_account_id"`
-	Amount        int64 `db:"amount" json:"amount"`
+	FromAccountID  int64 `db:"from_account_id" json:"from_account_id"`
+	ToAccountID    int64 `db:"to_account_id" json:"to_account_id"`
+	TransferedByID int64 `db:"transfered_by_id" json:"transfered_by_id"`
+	Amount         int64 `db:"amount" json:"amount"`
 }
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
-	row := q.db.QueryRow(ctx, CreateTransfer, arg.FromAccountID, arg.ToAccountID, arg.Amount)
+	row := q.db.QueryRow(ctx, CreateTransfer,
+		arg.FromAccountID,
+		arg.ToAccountID,
+		arg.TransferedByID,
+		arg.Amount,
+	)
 	var i Transfer
 	err := row.Scan(
 		&i.ID,
 		&i.FromAccountID,
 		&i.ToAccountID,
+		&i.TransferedByID,
 		&i.Amount,
 		&i.CreatedAt,
 	)
@@ -51,7 +60,7 @@ func (q *Queries) DeleteTransfer(ctx context.Context, id int64) error {
 
 const GetTransfer = `-- name: GetTransfer :one
 
-SELECT id, from_account_id, to_account_id, amount, created_at FROM transfers WHERE id = $1 LIMIT 1
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at FROM transfers WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
@@ -61,6 +70,7 @@ func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
 		&i.ID,
 		&i.FromAccountID,
 		&i.ToAccountID,
+		&i.TransferedByID,
 		&i.Amount,
 		&i.CreatedAt,
 	)
@@ -69,7 +79,7 @@ func (q *Queries) GetTransfer(ctx context.Context, id int64) (Transfer, error) {
 
 const GetTransfersAmountBetweenAsc = `-- name: GetTransfersAmountBetweenAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount BETWEEN $1 AND $2
 ORDER BY created_at ASC
@@ -102,6 +112,7 @@ func (q *Queries) GetTransfersAmountBetweenAsc(ctx context.Context, arg GetTrans
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -117,7 +128,7 @@ func (q *Queries) GetTransfersAmountBetweenAsc(ctx context.Context, arg GetTrans
 
 const GetTransfersAmountBetweenDesc = `-- name: GetTransfersAmountBetweenDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount BETWEEN $1 AND $2
 ORDER BY created_at DESC
@@ -150,6 +161,7 @@ func (q *Queries) GetTransfersAmountBetweenDesc(ctx context.Context, arg GetTran
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -165,7 +177,7 @@ func (q *Queries) GetTransfersAmountBetweenDesc(ctx context.Context, arg GetTran
 
 const GetTransfersAmountEQAsc = `-- name: GetTransfersAmountEQAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount = $1
 ORDER BY created_at ASC
@@ -192,6 +204,7 @@ func (q *Queries) GetTransfersAmountEQAsc(ctx context.Context, arg GetTransfersA
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -207,7 +220,7 @@ func (q *Queries) GetTransfersAmountEQAsc(ctx context.Context, arg GetTransfersA
 
 const GetTransfersAmountEQDesc = `-- name: GetTransfersAmountEQDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount = $1
 ORDER BY created_at DESC
@@ -234,6 +247,7 @@ func (q *Queries) GetTransfersAmountEQDesc(ctx context.Context, arg GetTransfers
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -249,7 +263,7 @@ func (q *Queries) GetTransfersAmountEQDesc(ctx context.Context, arg GetTransfers
 
 const GetTransfersAmountGTAsc = `-- name: GetTransfersAmountGTAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount > $1
 ORDER BY created_at ASC
@@ -276,6 +290,7 @@ func (q *Queries) GetTransfersAmountGTAsc(ctx context.Context, arg GetTransfersA
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -291,7 +306,7 @@ func (q *Queries) GetTransfersAmountGTAsc(ctx context.Context, arg GetTransfersA
 
 const GetTransfersAmountGTDesc = `-- name: GetTransfersAmountGTDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount > $1
 ORDER BY created_at DESC
@@ -318,6 +333,7 @@ func (q *Queries) GetTransfersAmountGTDesc(ctx context.Context, arg GetTransfers
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -333,7 +349,7 @@ func (q *Queries) GetTransfersAmountGTDesc(ctx context.Context, arg GetTransfers
 
 const GetTransfersAmountGTEQAsc = `-- name: GetTransfersAmountGTEQAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount >= $1
 ORDER BY created_at ASC
@@ -360,6 +376,7 @@ func (q *Queries) GetTransfersAmountGTEQAsc(ctx context.Context, arg GetTransfer
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -375,7 +392,7 @@ func (q *Queries) GetTransfersAmountGTEQAsc(ctx context.Context, arg GetTransfer
 
 const GetTransfersAmountGTEQDesc = `-- name: GetTransfersAmountGTEQDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount >= $1
 ORDER BY created_at DESC
@@ -402,6 +419,7 @@ func (q *Queries) GetTransfersAmountGTEQDesc(ctx context.Context, arg GetTransfe
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -417,7 +435,7 @@ func (q *Queries) GetTransfersAmountGTEQDesc(ctx context.Context, arg GetTransfe
 
 const GetTransfersAmountLTAsc = `-- name: GetTransfersAmountLTAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount < $1
 ORDER BY created_at ASC
@@ -444,6 +462,7 @@ func (q *Queries) GetTransfersAmountLTAsc(ctx context.Context, arg GetTransfersA
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -459,7 +478,7 @@ func (q *Queries) GetTransfersAmountLTAsc(ctx context.Context, arg GetTransfersA
 
 const GetTransfersAmountLTDesc = `-- name: GetTransfersAmountLTDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount < $1
 ORDER BY created_at DESC
@@ -486,6 +505,7 @@ func (q *Queries) GetTransfersAmountLTDesc(ctx context.Context, arg GetTransfers
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -501,7 +521,7 @@ func (q *Queries) GetTransfersAmountLTDesc(ctx context.Context, arg GetTransfers
 
 const GetTransfersAmountLTEQAsc = `-- name: GetTransfersAmountLTEQAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount <= $1
 ORDER BY created_at ASC
@@ -528,6 +548,7 @@ func (q *Queries) GetTransfersAmountLTEQAsc(ctx context.Context, arg GetTransfer
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -543,7 +564,7 @@ func (q *Queries) GetTransfersAmountLTEQAsc(ctx context.Context, arg GetTransfer
 
 const GetTransfersAmountLTEQDesc = `-- name: GetTransfersAmountLTEQDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount <= $1
 ORDER BY created_at DESC
@@ -570,6 +591,7 @@ func (q *Queries) GetTransfersAmountLTEQDesc(ctx context.Context, arg GetTransfe
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -585,7 +607,7 @@ func (q *Queries) GetTransfersAmountLTEQDesc(ctx context.Context, arg GetTransfe
 
 const GetTransfersAmountNOTEQAsc = `-- name: GetTransfersAmountNOTEQAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount <> $1
 ORDER BY created_at ASC
@@ -612,6 +634,7 @@ func (q *Queries) GetTransfersAmountNOTEQAsc(ctx context.Context, arg GetTransfe
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -627,7 +650,7 @@ func (q *Queries) GetTransfersAmountNOTEQAsc(ctx context.Context, arg GetTransfe
 
 const GetTransfersAmountNOTEQDesc = `-- name: GetTransfersAmountNOTEQDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE amount <> $1
 ORDER BY created_at DESC
@@ -654,6 +677,7 @@ func (q *Queries) GetTransfersAmountNOTEQDesc(ctx context.Context, arg GetTransf
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -669,7 +693,7 @@ func (q *Queries) GetTransfersAmountNOTEQDesc(ctx context.Context, arg GetTransf
 
 const GetTransfersAsc = `-- name: GetTransfersAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE
     from_account_id = $1
@@ -704,6 +728,7 @@ func (q *Queries) GetTransfersAsc(ctx context.Context, arg GetTransfersAscParams
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -719,7 +744,7 @@ func (q *Queries) GetTransfersAsc(ctx context.Context, arg GetTransfersAscParams
 
 const GetTransfersDesc = `-- name: GetTransfersDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE
     from_account_id = $1
@@ -754,6 +779,7 @@ func (q *Queries) GetTransfersDesc(ctx context.Context, arg GetTransfersDescPara
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -769,7 +795,7 @@ func (q *Queries) GetTransfersDesc(ctx context.Context, arg GetTransfersDescPara
 
 const GetTransfersFromAsc = `-- name: GetTransfersFromAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE from_account_id = $1
 ORDER BY created_at ASC
@@ -796,6 +822,7 @@ func (q *Queries) GetTransfersFromAsc(ctx context.Context, arg GetTransfersFromA
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -811,7 +838,7 @@ func (q *Queries) GetTransfersFromAsc(ctx context.Context, arg GetTransfersFromA
 
 const GetTransfersFromDesc = `-- name: GetTransfersFromDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE from_account_id = $1
 ORDER BY created_at DESC
@@ -838,6 +865,7 @@ func (q *Queries) GetTransfersFromDesc(ctx context.Context, arg GetTransfersFrom
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -853,7 +881,7 @@ func (q *Queries) GetTransfersFromDesc(ctx context.Context, arg GetTransfersFrom
 
 const GetTransfersToAsc = `-- name: GetTransfersToAsc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE to_account_id = $1
 ORDER BY created_at ASC
@@ -880,6 +908,7 @@ func (q *Queries) GetTransfersToAsc(ctx context.Context, arg GetTransfersToAscPa
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
@@ -895,7 +924,7 @@ func (q *Queries) GetTransfersToAsc(ctx context.Context, arg GetTransfersToAscPa
 
 const GetTransfersToDesc = `-- name: GetTransfersToDesc :many
 
-SELECT id, from_account_id, to_account_id, amount, created_at
+SELECT id, from_account_id, to_account_id, transfered_by_id, amount, created_at
 FROM transfers
 WHERE to_account_id = $1
 ORDER BY created_at DESC
@@ -922,6 +951,7 @@ func (q *Queries) GetTransfersToDesc(ctx context.Context, arg GetTransfersToDesc
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
+			&i.TransferedByID,
 			&i.Amount,
 			&i.CreatedAt,
 		); err != nil {
